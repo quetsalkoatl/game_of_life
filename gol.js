@@ -1,5 +1,4 @@
 const controller = new AbortController();
-const fpsEl = document.getElementById("fps");
 const sizeRange = document.getElementById("game_size");
 const sizeValue = document.getElementById("size_value");
 const speedRange = document.getElementById("game_speed");
@@ -10,6 +9,7 @@ const canvas = document.getElementById("game_of_life");
 const ctx = canvas.getContext("2d");
 
 const arraySize = 200;
+const deltas = [2000, 1500, 1000, 750, 500, 250, 175, 100, 50, 20, 10];
 
 let gameSize = 0;
 let game = undefined;
@@ -22,25 +22,30 @@ let lastUpdate = 0;
 let running = false;
 let fpsTimeout = false;
 let fpsCount = 0;
+let currentFps = 0;
+let generation = 0;
+let population = 0;
 let hover = undefined;
 
 function init() {
+    stopGame();
     game = new Array(arraySize ** 2);
     for (let i = 0; i < game.length; i++) {
         game[i] = false;
     }
+    population = 0;
+    generation = 0;
     lastGame = game.map(v => v);
+    draw();
 }
 
 function gameLoop(now) {
     const elapsed = now - lastUpdate;
-    if (elapsed >= delta) {
+    if (elapsed >= deltas[delta]) {
         lastUpdate = now;
-        if (running) {
-            calculate();
-            draw();
-            fps();
-        }
+        calculate();
+        draw();
+        fps();
     }
     if (running) {
         requestAnimationFrame(gameLoop);
@@ -48,6 +53,8 @@ function gameLoop(now) {
 }
 
 function calculate() {
+    generation++;
+    population = 0;
     let someChanged = false;
     game = game.map((alive, idx) => {
         const y = Math.floor(idx / arraySize);
@@ -60,8 +67,10 @@ function calculate() {
                 someChanged = true;
                 return false;
             }
+            population++;
         } else if(neighbors === 3) {
             someChanged = someChanged || !alive;
+            population++;
             return true;
         }
         return alive;
@@ -105,6 +114,11 @@ function draw() {
             ctx.fillRect(posX, posY, squareSize, squareSize);
         }
     }
+    ctx.font = `bold 20px Helvetica`;
+    ctx.fillStyle = "white";
+    ctx.fillText(`FPS: ${currentFps}`, 10, 30);
+    ctx.fillText(`Generation: ${generation}`, 10, 60);
+    ctx.fillText(`Population: ${population}`, 10, 90);
     if (hover) {
         const posX = hover.x * mul + lineSize;
         const posY = hover.y * mul + lineSize;
@@ -120,7 +134,7 @@ function fps() {
         fpsTimeout = true;
         setTimeout(() => {
             if (running) {
-                fpsEl.innerHTML = fpsCount;
+                currentFps = fpsCount;
                 fpsCount = 0;
             }
             fpsTimeout = false;
@@ -151,6 +165,8 @@ function clickCanvas(e) {
     if (validCoords(x, y)) {
         const i = getGameIndex(x, y);
         game[i] = !game[i];
+        generation = 0;
+        population = getCurrentPopulation();
         draw();
     }
 }
@@ -219,15 +235,15 @@ function scrollSpeed(e) {
     if (e.deltaY > 0 && current < 10) {
         speedRange.value = current + 1;
         changeSpeed();
-    } else if (e.deltaY < 0 && current > 1) {
+    } else if (e.deltaY < 0 && current > 0) {
         speedRange.value = current - 1;
         changeSpeed();
     }
 }
 
 function changeSpeed() {
-    delta = Math.round(-1980 * Math.log10(speedRange.value) + 2000);
-    speedValue.innerHTML = delta;
+    delta = speedRange.value;
+    speedValue.innerHTML = Math.round(1000 / deltas[delta]);
 }
 
 function stopGame() {
@@ -242,14 +258,19 @@ function runGame(e, overrideValue) {
         requestAnimationFrame(gameLoop);
     } else {
         fpsCount = 0;
-        fpsEl.innerHTML = fpsCount;
+        currentFps = 0;
     }
 }
 
 function resetGame() {
-    game = lastGame;
     stopGame();
+    game = lastGame;
+    population = getCurrentPopulation();
     draw();
+}
+
+function getCurrentPopulation() {
+    return game.reduce((acc, curr) => curr ? acc + 1 : acc, 0);
 }
 
 sizeRange.addEventListener("change", changeSize);
@@ -264,4 +285,3 @@ window.addEventListener("resize", resize);
 init();
 changeSize();
 changeSpeed();
-requestAnimationFrame(gameLoop);

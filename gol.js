@@ -265,6 +265,7 @@ function runGame(e, overrideValue) {
 function resetGame() {
     stopGame();
     game = lastGame;
+    generation = 0;
     population = getCurrentPopulation();
     draw();
 }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Game of Life</title>
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+            }
+
+            .container {
+                display: flex;
+                flex-flow: column;
+                height: 100%;
+            }
+
+            .header {
+                flex: 0 1 auto;
+                text-align: center;
+                margin-bottom: 10px;
+            }
+
+            .controls {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .content {
+                flex: 1 1 auto;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            canvas {
+                background-color: rgb(50 50 50);
+            }
+
+            .inline {
+                display: inline-block;
+            }
+
+            button {
+                padding: 5px;
+                width: 80px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Game of Life</h1>
+                <div class="controls">
+                    <div>
+                        FPS: <span id="fps">0</span>
+                    </div>
+                    <div>
+                        <div>
+                            <input type="range" min="1" max="20" value="4" class="slider" id="game_size">
+                        </div>
+                        <div>
+                            Size: <span id="size_value"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <input type="range" min="1" max="10" value="3" class="slider" id="game_speed">
+                        </div>
+                        <div>
+                            Delay: <span id="speed_value"></span>ms
+                        </div>
+                    </div>
+                    <div>
+                        <button id="run_button" onclick="runGame()">RUN</button>
+                    </div>
+                    <div>
+                        <button id="clear_button" onclick="init()">clear all</button>
+                    </div>
+                    <div>
+                        <button id="reset_button" onclick="resetGame()">reset</button>
+                    </div>
+                </div>
+            </div>
+            <div class="content" id="content">
+                <canvas width="0" height="0" id="game_of_life"></canvas>
+            </div>
+        </div>
+        <script src="gol.js"></script>
+    </body>
+</html>
